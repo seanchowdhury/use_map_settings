@@ -70,87 +70,71 @@
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__unit__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__selector__ = __webpack_require__(2);
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const grid = {};
+  const canvas = document.getElementById('canvas')
+  const ctx = canvas.getContext('2d')
+  const grid = {}
   for (let i = 0; i < canvas.width; i += 20) {
     for (let n = 0; n < canvas.height; n += 20) {
-      grid[[i,n]] = 0;
+      grid[[i,n]] = 0
     }
   }
-  const units = [];
-  const selectedUnits = [];
-  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([0,0], grid));
-  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([100,100], grid));
-
-
-
-  canvas.addEventListener("click", (target) => {
-    const gridX = 20 * Math.floor(target.x / 20);
-    const gridY = 20 * Math.floor(target.y / 20);
-    selectUnits([[gridX, gridY]], grid, selectedUnits);
-  });
-
-  canvas.addEventListener("onmousedown", (target) => {
-    
-  })
+  const units = []
+  const selectedUnits = []
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([220,400], grid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([100,100], grid))
+  debugger
+  const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, selectedUnits)
 
   const update = () => {
-    drawGrid(ctx, canvas);
-    drawUnits(ctx, units);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    drawGrid(ctx, canvas)
+    drawUnits(ctx, units)
+    if (selector.selecting) {
+      selector.drawSelector()
+    }
     requestAnimFrame(() => {
-      update();
+      update()
     })
   }
 
-  update();
+  update()
 })
 
-const selectUnits = (coordinates, grid, selectedUnits) => {
-  if (grid[coordinates]) {
-    selectedUnits.forEach((unit) => {
-      unit.selected = false;
-    })
-    selectedUnits.length = 0;
-    for (let i = 0; i < coordinates.length; i++) {
-      selectedUnits.push(grid[coordinates[i]])
-      grid[coordinates[i]].selected = true;
-    }
-  }
-}
-
 const drawGrid = (ctx, canvas) => {
+  ctx.strokeStyle = '#000000'
   for (let i = 0; i < canvas.width; i += 20) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i, canvas.height);
-    ctx.stroke();
+    ctx.beginPath()
+    ctx.moveTo(i, 0)
+    ctx.lineTo(i, canvas.height)
+    ctx.stroke()
   }
   for (let n = 0; n < canvas.height; n += 20) {
-    ctx.beginPath();
-    ctx.moveTo(0, n);
-    ctx.lineTo(canvas.width, n);
-    ctx.stroke();
+    ctx.beginPath()
+    ctx.moveTo(0, n)
+    ctx.lineTo(canvas.width, n)
+    ctx.stroke()
   }
 }
 
 const drawUnits = (ctx, units) => {
   for(let i = 0; i < units.length; i++) {
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#000000'
     if (units[i].selected) {
-      ctx.fillStyle = '#00ff00';
+      ctx.fillStyle = '#00ff00'
     }
-    ctx.fillRect(units[i].pos[0], units[i].pos[1], 20, 20);
+    ctx.fillRect(units[i].pos[0], units[i].pos[1], 20, 20)
   }
 }
 
 window.requestAnimFrame = (function(callback) {
   return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
   function(callback) {
-    window.setTimeout(callback, 1000/60);
+    window.setTimeout(callback, 1000/60)
   };
 })();
 
@@ -169,6 +153,108 @@ class Unit {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Unit);
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Selector {
+  constructor(grid, selectedUnits) {
+    this.grid = grid
+    this.selectedUnits = selectedUnits
+
+    this.selecting = false
+    this.startX
+    this.startY
+    this.UIcanvas = document.getElementById('UIcanvas')
+    this.UIctx = this.UIcanvas.getContext('2d')
+
+    this.drawSelector = this.drawSelector.bind(this)
+    this.selectorRectangle = this.selectorRectangle.bind(this)
+    this.selectCells = this.selectCells.bind(this)
+    this.selectUnits = this.selectUnits.bind(this)
+
+    this.UIcanvas.addEventListener("mousedown", (target) => {
+      this.drawSelector(target.x, target.y);
+    })
+
+    this.UIcanvas.addEventListener("mouseup", this.selectCells, false)
+
+  }
+
+  drawSelector(mouseX, mouseY) {
+    if (this.selecting) {
+      this.UIcanvas.addEventListener("mousemove", this.selectorRectangle, false)
+    } else {
+      this.selecting = true;
+      this.startX = mouseX;
+      this.startY = mouseY;
+      this.UIctx.fillRect(mouseX, mouseY, 1, 1)
+      this.UIctx.strokeRect(mouseX, mouseY, 1, 1)
+    }
+  }
+
+  selectorRectangle(target) {
+    this.UIctx.clearRect(0,0, this.UIcanvas.width, this.UIcanvas.height);
+    this.UIctx.fillStyle = 'rgba(0, 255, 0, 0.2)'
+    this.UIctx.strokeStyle = '#94ff00'
+    this.UIctx.fillRect(this.startX, this.startY, target.x - this.startX, target.y - this.startY)
+    this.UIctx.strokeRect(this.startX, this.startY, target.x - this.startX, target.y - this.startY)
+  }
+
+  selectCells(target) {
+    this.selecting = false;
+    this.UIctx.clearRect(0, 0, this.UIcanvas.width, this.UIcanvas.height)
+    this.UIcanvas.removeEventListener("mousemove", this.selectorRectangle, false)
+    let startX = 20 * Math.floor(this.startX / 20)
+    let startY = 20 * Math.floor(this.startY / 20)
+    let endX = 20 * Math.floor(target.x / 20)
+    let endY = 20 * Math.floor(target.y / 20)
+    const coordinates = []
+    if (startX > endX) {
+      const tempX = startX
+      startX = endX
+      endX = tempX
+    }
+    if (startY > endY) {
+      const tempY = startY
+      startY = endY
+      endY = tempY
+    }
+    for (let i = startX; i < endX; i += 20) {
+      for (let n = startY; n < endY; n += 20) {
+        coordinates.push([i,n])
+      }
+    }
+    this.selectUnits(coordinates, this.grid, this.selectedUnits)
+  }
+
+  selectUnits(coordinates) {
+    const newSelect = []
+    for (let i = 0; i < coordinates.length; i++) {
+      if (this.grid[coordinates[i]]) {
+        newSelect.push(this.grid[coordinates[i]])
+        this.grid[coordinates[i]].selected = true;
+      }
+    }
+    if (newSelect.length > 0) {
+      if (this.selectedUnits.length > 0){
+        this.selectedUnits.forEach((unit) => {
+          unit.selected = false;
+        })
+      }
+      this.selectedUnits = newSelect;
+      newSelect.forEach((unit) => {
+        unit.selected = true;
+      })
+    }
+  }
+
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Selector);
 
 
 /***/ })
