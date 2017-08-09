@@ -1,22 +1,35 @@
 import Unit from './unit'
 import Selector from './selector'
+import findPath from './astar'
+
+const cellSize = 10;
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById('canvas')
   const ctx = canvas.getContext('2d')
   const grid = {}
-  for (let i = 0; i < canvas.width; i += 20) {
-    for (let n = 0; n < canvas.height; n += 20) {
-      grid[[i,n]] = 0
+  let gridInitX = 0
+  let gridInitY
+  const pathfindingGrid = []
+  for (let i = 0; i < canvas.width; i += cellSize) {
+    grid[gridInitX] = {}
+    gridInitY = 0
+    pathfindingGrid.push([])
+    for (let n = 0; n < canvas.height; n += cellSize) {
+      grid[gridInitX][gridInitY] = {}
+      grid[gridInitX][gridInitY].path = 0
+      gridInitY++
+      pathfindingGrid[gridInitX].push(0)
     }
+    gridInitX++
   }
+
   const units = []
   const selectedUnits = []
-  units.push(new Unit([220,400], grid))
-  units.push(new Unit([100,100], grid))
-  debugger
-  const selector = new Selector(grid, selectedUnits)
-
+  units.push(new Unit([25,25], grid, pathfindingGrid))
+  units.push(new Unit([5,5], grid, pathfindingGrid))
+  console.log(findPath(pathfindingGrid, [0,0], [5,5]))
+  const selector = new Selector(grid, selectedUnits, cellSize)
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawGrid(ctx, canvas)
@@ -28,19 +41,18 @@ document.addEventListener("DOMContentLoaded", () => {
       update()
     })
   }
-
   update()
 })
 
 const drawGrid = (ctx, canvas) => {
   ctx.strokeStyle = '#000000'
-  for (let i = 0; i < canvas.width; i += 20) {
+  for (let i = 0; i < canvas.width; i += cellSize) {
     ctx.beginPath()
     ctx.moveTo(i, 0)
     ctx.lineTo(i, canvas.height)
     ctx.stroke()
   }
-  for (let n = 0; n < canvas.height; n += 20) {
+  for (let n = 0; n < canvas.height; n += cellSize) {
     ctx.beginPath()
     ctx.moveTo(0, n)
     ctx.lineTo(canvas.width, n)
@@ -54,7 +66,7 @@ const drawUnits = (ctx, units) => {
     if (units[i].selected) {
       ctx.fillStyle = '#00ff00'
     }
-    ctx.fillRect(units[i].pos[0], units[i].pos[1], 20, 20)
+    ctx.fillRect(units[i].pos[0] * cellSize, units[i].pos[1] * cellSize, cellSize, cellSize)
   }
 }
 

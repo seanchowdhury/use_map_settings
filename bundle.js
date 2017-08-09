@@ -71,25 +71,39 @@
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__unit__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__selector__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astar__ = __webpack_require__(3);
 
 
+
+
+const cellSize = 10;
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById('canvas')
   const ctx = canvas.getContext('2d')
   const grid = {}
-  for (let i = 0; i < canvas.width; i += 20) {
-    for (let n = 0; n < canvas.height; n += 20) {
-      grid[[i,n]] = 0
+  let gridInitX = 0
+  let gridInitY
+  const pathfindingGrid = []
+  for (let i = 0; i < canvas.width; i += cellSize) {
+    grid[gridInitX] = {}
+    gridInitY = 0
+    pathfindingGrid.push([])
+    for (let n = 0; n < canvas.height; n += cellSize) {
+      grid[gridInitX][gridInitY] = {}
+      grid[gridInitX][gridInitY].path = 0
+      gridInitY++
+      pathfindingGrid[gridInitX].push(0)
     }
+    gridInitX++
   }
+
   const units = []
   const selectedUnits = []
-  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([220,400], grid))
-  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([100,100], grid))
-  debugger
-  const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, selectedUnits)
-
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([25,25], grid, pathfindingGrid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([5,5], grid, pathfindingGrid))
+  console.log(__WEBPACK_IMPORTED_MODULE_2__astar__["a" /* default */](pathfindingGrid, [0,0], [5,5]))
+  const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, selectedUnits, cellSize)
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawGrid(ctx, canvas)
@@ -101,19 +115,18 @@ document.addEventListener("DOMContentLoaded", () => {
       update()
     })
   }
-
   update()
 })
 
 const drawGrid = (ctx, canvas) => {
   ctx.strokeStyle = '#000000'
-  for (let i = 0; i < canvas.width; i += 20) {
+  for (let i = 0; i < canvas.width; i += cellSize) {
     ctx.beginPath()
     ctx.moveTo(i, 0)
     ctx.lineTo(i, canvas.height)
     ctx.stroke()
   }
-  for (let n = 0; n < canvas.height; n += 20) {
+  for (let n = 0; n < canvas.height; n += cellSize) {
     ctx.beginPath()
     ctx.moveTo(0, n)
     ctx.lineTo(canvas.width, n)
@@ -127,7 +140,7 @@ const drawUnits = (ctx, units) => {
     if (units[i].selected) {
       ctx.fillStyle = '#00ff00'
     }
-    ctx.fillRect(units[i].pos[0], units[i].pos[1], 20, 20)
+    ctx.fillRect(units[i].pos[0] * cellSize, units[i].pos[1] * cellSize, cellSize, cellSize)
   }
 }
 
@@ -145,9 +158,11 @@ window.requestAnimFrame = (function(callback) {
 
 "use strict";
 class Unit {
-  constructor(spawnPos, grid) {
+  constructor(spawnPos, grid, pathfindingGrid) {
     this.pos = spawnPos;
-    grid[spawnPos] = this
+    grid[spawnPos[0]][spawnPos[1]].unit = this
+    grid[spawnPos[0]][spawnPos[1]].path = 1
+    pathfindingGrid[spawnPos[0]][spawnPos[1]] = 1
     this.selected = false;
   }
 }
@@ -161,10 +176,10 @@ class Unit {
 
 "use strict";
 class Selector {
-  constructor(grid, selectedUnits) {
+  constructor(grid, selectedUnits, cellSize) {
     this.grid = grid
     this.selectedUnits = selectedUnits
-
+    this.cellSize = cellSize
     this.selecting = false
     this.startX
     this.startY
@@ -208,10 +223,10 @@ class Selector {
     this.selecting = false;
     this.UIctx.clearRect(0, 0, this.UIcanvas.width, this.UIcanvas.height)
     this.UIcanvas.removeEventListener("mousemove", this.selectorRectangle, false)
-    let startX = 20 * Math.floor(this.startX / 20)
-    let startY = 20 * Math.floor(this.startY / 20)
-    let endX = 20 * Math.floor(target.x / 20)
-    let endY = 20 * Math.floor(target.y / 20)
+    let startX = Math.floor(this.startX / this.cellSize)
+    let startY = Math.floor(this.startY / this.cellSize)
+    let endX = Math.floor(target.x / this.cellSize)
+    let endY = Math.floor(target.y / this.cellSize)
     const coordinates = []
     if (startX > endX) {
       const tempX = startX
@@ -223,8 +238,9 @@ class Selector {
       startY = endY
       endY = tempY
     }
-    for (let i = startX; i < endX; i += 20) {
-      for (let n = startY; n < endY; n += 20) {
+
+    for (let i = startX; i <= endX; i++) {
+      for (let n = startY; n <= endY; n++) {
         coordinates.push([i,n])
       }
     }
@@ -234,9 +250,9 @@ class Selector {
   selectUnits(coordinates) {
     const newSelect = []
     for (let i = 0; i < coordinates.length; i++) {
-      if (this.grid[coordinates[i]]) {
-        newSelect.push(this.grid[coordinates[i]])
-        this.grid[coordinates[i]].selected = true;
+      const coord = coordinates[i]
+      if (this.grid[coord[0]][coord[1]].unit) {
+        newSelect.push(this.grid[coord[0]][coord[1]].unit)
       }
     }
     if (newSelect.length > 0) {
@@ -255,6 +271,163 @@ class Selector {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Selector);
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+const findPath = (map, pathStart, pathEnd) => {
+  const	abs = Math.abs
+	const	max = Math.max
+	const	pow = Math.pow
+	const	sqrt = Math.sqrt
+  const grid = map
+	const maxWalkableTileNum = 0
+  let shortestDist = 100000;
+  let closestPos;
+
+	const gridWidth = grid[0].length
+	const gridHeight = grid.length
+	const gridSize =	gridWidth * gridHeight
+
+  const DiagonalDistance = (Point, Goal) => {
+		return max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
+	}
+
+  const DiagonalDistanceGoal = (Point, Goal) => {
+    const dist =  max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
+    if (dist < shortestDist) {
+      shortestDist = dist
+      closestPos = Point
+    }
+    return dist
+  }
+
+  const Neighbours = (x, y) => {
+    const	N = y - 1,
+    S = y + 1,
+    E = x + 1,
+    W = x - 1,
+    myN = N > -1 && canWalkHere(x, N),
+    myS = S < gridHeight && canWalkHere(x, S),
+    myE = E < gridWidth && canWalkHere(E, y),
+    myW = W > -1 && canWalkHere(W, y),
+    result = [];
+    if(myN)
+    result.push({x:x, y:N});
+    if(myE)
+    result.push({x:E, y:y});
+    if(myS)
+    result.push({x:x, y:S});
+    if(myW)
+    result.push({x:W, y:y});
+    findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
+    return result;
+  }
+
+  const DiagonalNeighbors = (myN, myS, myE, myW, N, S, E, W, result) => {
+		if(myN)
+		{
+			if(myE && canWalkHere(E, N))
+			result.push({x:E, y:N})
+			if(myW && canWalkHere(W, N))
+			result.push({x:W, y:N})
+		}
+		if(myS)
+		{
+			if(myE && canWalkHere(E, S))
+			result.push({x:E, y:S})
+			if(myW && canWalkHere(W, S))
+			result.push({x:W, y:S})
+		}
+	}
+
+  const findNeighbours = DiagonalNeighbors
+
+  const canWalkHere = (x, y) => {
+    return ((grid[x] != null) &&
+      (grid[x][y] != null) &&
+      (grid[x][y] <= maxWalkableTileNum));
+  }
+
+  const Node = (Parent, Point) => {
+		var newNode = {
+			Parent:Parent,
+			value:Point.x + (Point.y * gridWidth),
+			x:Point.x,
+			y:Point.y,
+			f:0,
+			g:0
+		};
+
+		return newNode;
+	}
+
+  const calculatePath = () => {
+		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
+		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
+		const AStar = new Array(gridSize);
+		const Open = [mypathStart];
+		const Closed = [];
+		const result = [];
+		let myNeighbours;
+		let myNode;
+		let myPath;
+		let length, max, min, i, j;
+		while(length = Open.length)
+		{
+			max = gridSize;
+			min = -1;
+			for(i = 0; i < length; i++)
+			{
+				if(Open[i].f < max)
+				{
+					max = Open[i].f;
+					min = i;
+				}
+			}
+			myNode = Open.splice(min, 1)[0];
+			if(myNode.value === mypathEnd.value)
+			{
+				myPath = Closed[Closed.push(myNode) - 1];
+				do
+				{
+					result.push([myPath.x, myPath.y]);
+				}
+				while (myPath = myPath.Parent);
+				AStar = Closed = Open = [];
+				result.reverse();
+			}
+			else
+			{
+				myNeighbours = Neighbours(myNode.x, myNode.y);
+				for(i = 0, j = myNeighbours.length; i < j; i++)
+				{
+					myPath = Node(myNode, myNeighbours[i]);
+					if (!AStar[myPath.value])
+					{
+						myPath.g = myNode.g + DiagonalDistance(myNeighbours[i], myNode);
+						myPath.f = myPath.g + DiagonalDistanceGoal(myNeighbours[i], mypathEnd);
+						Open.push(myPath);
+						AStar[myPath.value] = true;
+					}
+				}
+				Closed.push(myNode);
+			}
+		}
+    if (result.length === 0) {
+      result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
+    }
+		return result;
+	}
+
+  return calculatePath()
+
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (findPath);
 
 
 /***/ })

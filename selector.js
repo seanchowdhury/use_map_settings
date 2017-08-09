@@ -1,8 +1,8 @@
 class Selector {
-  constructor(grid, selectedUnits) {
+  constructor(grid, selectedUnits, cellSize) {
     this.grid = grid
     this.selectedUnits = selectedUnits
-
+    this.cellSize = cellSize
     this.selecting = false
     this.startX
     this.startY
@@ -46,10 +46,10 @@ class Selector {
     this.selecting = false;
     this.UIctx.clearRect(0, 0, this.UIcanvas.width, this.UIcanvas.height)
     this.UIcanvas.removeEventListener("mousemove", this.selectorRectangle, false)
-    let startX = 20 * Math.floor(this.startX / 20)
-    let startY = 20 * Math.floor(this.startY / 20)
-    let endX = 20 * Math.floor(target.x / 20)
-    let endY = 20 * Math.floor(target.y / 20)
+    let startX = Math.floor(this.startX / this.cellSize)
+    let startY = Math.floor(this.startY / this.cellSize)
+    let endX = Math.floor(target.x / this.cellSize)
+    let endY = Math.floor(target.y / this.cellSize)
     const coordinates = []
     if (startX > endX) {
       const tempX = startX
@@ -61,8 +61,9 @@ class Selector {
       startY = endY
       endY = tempY
     }
-    for (let i = startX; i < endX; i += 20) {
-      for (let n = startY; n < endY; n += 20) {
+
+    for (let i = startX; i <= endX; i++) {
+      for (let n = startY; n <= endY; n++) {
         coordinates.push([i,n])
       }
     }
@@ -72,9 +73,9 @@ class Selector {
   selectUnits(coordinates) {
     const newSelect = []
     for (let i = 0; i < coordinates.length; i++) {
-      if (this.grid[coordinates[i]]) {
-        newSelect.push(this.grid[coordinates[i]])
-        this.grid[coordinates[i]].selected = true;
+      const coord = coordinates[i]
+      if (this.grid[coord[0]][coord[1]].unit) {
+        newSelect.push(this.grid[coord[0]][coord[1]].unit)
       }
     }
     if (newSelect.length > 0) {
