@@ -88,10 +88,11 @@ const findPath = (map, pathStart, pathEnd) => {
   const calculatePath = () => {
 		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
 		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
-		const AStar = new Array(gridSize);
-		const Open = [mypathStart];
-		const Closed = [];
-		const result = [];
+
+    let AStar = new Array(gridSize);
+    let Open = [mypathStart];
+    let Closed = [];
+		let result = [];
 		let myNeighbours;
 		let myNode;
 		let myPath;
