@@ -1,0 +1,23 @@
+{
+  "name": "Use Map Settings",
+  "version": "1.0.0",
+  "description": "== README",
+  "main": "main.js",
+  "dependencies": {
+    "webpack": "^3.0.0"
+  },
+  "scripts": {
+    "postinstall": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanchowdhury/use_map_settings.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/seanchowdhury/use_map_settings/issues"
+  },
+  "homepage": "https://github.com/seanchowdhury/use_map_settings#readme"
+}
