@@ -73,7 +73,7 @@ const findPath = (map, pathStart, pathEnd) => {
   }
 
   const Node = (Parent, Point) => {
-		var newNode = {
+		const newNode = {
 			Parent:Parent,
 			value:Point.x + (Point.y * gridWidth),
 			x:Point.x,
