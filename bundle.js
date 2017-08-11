@@ -72,6 +72,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__unit__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__selector__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astar__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game_js__ = __webpack_require__(4);
+
 
 
 
@@ -97,16 +99,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     gridInitX++
   }
-
+  const game = new __WEBPACK_IMPORTED_MODULE_3__game_js__["a" /* default */](grid, pathfindingGrid)
   const units = []
   const selectedUnits = []
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([25,25], grid, pathfindingGrid))
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([5,5], grid, pathfindingGrid))
-  console.log(__WEBPACK_IMPORTED_MODULE_2__astar__["a" /* default */](pathfindingGrid, [0,0], [5,5]))
-  const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, selectedUnits, cellSize)
+  const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, pathfindingGrid, selectedUnits, cellSize)
+
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawGrid(ctx, canvas)
+    for (let i = 0; i < units.length; i++) {
+      if (units[i].ralliedPos) {
+        game.moveUnit(units[i])
+      }
+    }
     drawUnits(ctx, units)
     if (selector.selecting) {
       selector.drawSelector()
@@ -163,7 +170,17 @@ class Unit {
     grid[spawnPos[0]][spawnPos[1]].unit = this
     grid[spawnPos[0]][spawnPos[1]].path = 1
     pathfindingGrid[spawnPos[0]][spawnPos[1]] = 1
-    this.selected = false;
+    this.ralliedPos = false;
+    this.selected = false
+    this.timer = 30
+  }
+
+  move(nextPos) {
+    this.pos[0] = nextPos[0]
+    this.pos[1] = nextPos[1]
+    if (this.pos[0] === this.ralliedPos[0] && this.pos[1] === this.ralliedPos[1]) {
+      this.ralliedPos = false;
+    }
   }
 }
 
@@ -176,8 +193,9 @@ class Unit {
 
 "use strict";
 class Selector {
-  constructor(grid, selectedUnits, cellSize) {
+  constructor(grid, pathfindingGrid, selectedUnits, cellSize) {
     this.grid = grid
+    this.pathfindingGrid = pathfindingGrid
     this.selectedUnits = selectedUnits
     this.cellSize = cellSize
     this.selecting = false
@@ -190,6 +208,7 @@ class Selector {
     this.selectorRectangle = this.selectorRectangle.bind(this)
     this.selectCells = this.selectCells.bind(this)
     this.selectUnits = this.selectUnits.bind(this)
+    this.unitAction = this.unitAction.bind(this)
 
     this.UIcanvas.addEventListener("mousedown", (target) => {
       this.drawSelector(target.x, target.y);
@@ -197,6 +216,16 @@ class Selector {
 
     this.UIcanvas.addEventListener("mouseup", this.selectCells, false)
 
+    this.UIcanvas.addEventListener("contextmenu", this.unitAction, false)
+  }
+
+  unitAction(target) {
+    target.preventDefault();
+    const endX = Math.floor(target.x / 10)
+    const endY = Math.floor(target.y / 10)
+    for (let i = 0; i < this.selectedUnits.length; i++) {
+      this.selectedUnits[i].ralliedPos = [endX, endY]
+    }
   }
 
   drawSelector(mouseX, mouseY) {
@@ -418,6 +447,7 @@ const findPath = (map, pathStart, pathEnd) => {
 				Closed.push(myNode);
 			}
 		}
+
     if (result.length === 0) {
       result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
     }
@@ -429,6 +459,35 @@ const findPath = (map, pathStart, pathEnd) => {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (findPath);
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__astar__ = __webpack_require__(3);
+
+
+class Game {
+
+  constructor(grid, pathfindingGrid) {
+    this.grid = grid
+    this.pathfindingGrid = pathfindingGrid
+  }
+
+  moveUnit(unit) {
+    const nextPos = __WEBPACK_IMPORTED_MODULE_0__astar__["a" /* default */](this.pathfindingGrid, unit.pos, unit.ralliedPos)[1]
+    if (unit.timer == 0) {
+      unit.move(nextPos)
+      unit.timer = 30
+    }
+    unit.timer -= 1
+  }
+
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Game);
 
 
 /***/ })

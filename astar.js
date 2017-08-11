@@ -138,6 +138,7 @@ const findPath = (map, pathStart, pathEnd) => {
 				Closed.push(myNode);
 			}
 		}
+
     if (result.length === 0) {
       result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
     }

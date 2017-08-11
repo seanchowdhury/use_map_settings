@@ -1,6 +1,7 @@
 import Unit from './unit'
 import Selector from './selector'
 import findPath from './astar'
+import Game from './game.js'
 
 const cellSize = 10;
 
@@ -23,16 +24,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     gridInitX++
   }
-
+  const game = new Game(grid, pathfindingGrid)
   const units = []
   const selectedUnits = []
   units.push(new Unit([25,25], grid, pathfindingGrid))
   units.push(new Unit([5,5], grid, pathfindingGrid))
-  console.log(findPath(pathfindingGrid, [0,0], [5,5]))
-  const selector = new Selector(grid, selectedUnits, cellSize)
+  const selector = new Selector(grid, pathfindingGrid, selectedUnits, cellSize)
+
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawGrid(ctx, canvas)
+    for (let i = 0; i < units.length; i++) {
+      if (units[i].ralliedPos) {
+        game.moveUnit(units[i])
+      }
+    }
     drawUnits(ctx, units)
     if (selector.selecting) {
       selector.drawSelector()

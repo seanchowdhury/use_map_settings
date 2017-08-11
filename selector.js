@@ -1,6 +1,7 @@
 class Selector {
-  constructor(grid, selectedUnits, cellSize) {
+  constructor(grid, pathfindingGrid, selectedUnits, cellSize) {
     this.grid = grid
+    this.pathfindingGrid = pathfindingGrid
     this.selectedUnits = selectedUnits
     this.cellSize = cellSize
     this.selecting = false
@@ -13,6 +14,7 @@ class Selector {
     this.selectorRectangle = this.selectorRectangle.bind(this)
     this.selectCells = this.selectCells.bind(this)
     this.selectUnits = this.selectUnits.bind(this)
+    this.unitAction = this.unitAction.bind(this)
 
     this.UIcanvas.addEventListener("mousedown", (target) => {
       this.drawSelector(target.x, target.y);
@@ -20,6 +22,16 @@ class Selector {
 
     this.UIcanvas.addEventListener("mouseup", this.selectCells, false)
 
+    this.UIcanvas.addEventListener("contextmenu", this.unitAction, false)
+  }
+
+  unitAction(target) {
+    target.preventDefault();
+    const endX = Math.floor(target.x / 10)
+    const endY = Math.floor(target.y / 10)
+    for (let i = 0; i < this.selectedUnits.length; i++) {
+      this.selectedUnits[i].ralliedPos = [endX, endY]
+    }
   }
 
   drawSelector(mouseX, mouseY) {
