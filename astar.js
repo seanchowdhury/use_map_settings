@@ -1,4 +1,4 @@
-const findPath = (map, pathStart, pathEnd) => {
+const findPath = (map, pathStart, pathEnd, unit) => {
   const	abs = Math.abs
 	const	max = Math.max
 	const	pow = Math.pow
@@ -138,8 +138,8 @@ const findPath = (map, pathStart, pathEnd) => {
 				Closed.push(myNode);
 			}
 		}
-
     if (result.length === 0) {
+      unit.resetRally([closestPos.x, closestPos.y])
       result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
     }
 		return result;

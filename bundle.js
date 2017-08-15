@@ -99,11 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     gridInitX++
   }
+  console.log(grid)
+  console.log(pathfindingGrid)
   const game = new __WEBPACK_IMPORTED_MODULE_3__game_js__["a" /* default */](grid, pathfindingGrid)
   const units = []
   const selectedUnits = []
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([25,25], grid, pathfindingGrid))
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([5,5], grid, pathfindingGrid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([50,50], grid, pathfindingGrid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([15,52], grid, pathfindingGrid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([52,35], grid, pathfindingGrid))
   const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, pathfindingGrid, selectedUnits, cellSize)
 
   const update = () => {
@@ -166,21 +171,35 @@ window.requestAnimFrame = (function(callback) {
 "use strict";
 class Unit {
   constructor(spawnPos, grid, pathfindingGrid) {
-    this.pos = spawnPos;
+    this.pos = spawnPos
+    this.pathfindingGrid = pathfindingGrid
+    this.grid = grid
     grid[spawnPos[0]][spawnPos[1]].unit = this
     grid[spawnPos[0]][spawnPos[1]].path = 1
     pathfindingGrid[spawnPos[0]][spawnPos[1]] = 1
-    this.ralliedPos = false;
+    this.ralliedPos = false
     this.selected = false
     this.timer = 30
+    this.resetRally = this.resetRally.bind(this)
   }
 
   move(nextPos) {
+    console.log(this.ralliedPos)
+    this.pathfindingGrid[this.pos[0]][this.pos[1]] = 0
+    this.grid[this.pos[0]][this.pos[1]].unit = undefined
+    this.grid[this.pos[0]][this.pos[1]].path = 0
     this.pos[0] = nextPos[0]
     this.pos[1] = nextPos[1]
+    this.pathfindingGrid[this.pos[0]][this.pos[1]] = 1
+    this.grid[nextPos[0]][nextPos[1]].unit = this
+    this.grid[nextPos[0]][nextPos[1]].path = 1
     if (this.pos[0] === this.ralliedPos[0] && this.pos[1] === this.ralliedPos[1]) {
       this.ralliedPos = false;
     }
+  }
+
+  resetRally(newPos) {
+    this.ralliedPos = [newPos[0], newPos[1]]
   }
 }
 
@@ -307,7 +326,7 @@ class Selector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-const findPath = (map, pathStart, pathEnd) => {
+const findPath = (map, pathStart, pathEnd, unit) => {
   const	abs = Math.abs
 	const	max = Math.max
 	const	pow = Math.pow
@@ -447,8 +466,8 @@ const findPath = (map, pathStart, pathEnd) => {
 				Closed.push(myNode);
 			}
 		}
-
     if (result.length === 0) {
+      unit.resetRally([closestPos.x, closestPos.y])
       result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
     }
 		return result;
@@ -477,10 +496,10 @@ class Game {
   }
 
   moveUnit(unit) {
-    const nextPos = __WEBPACK_IMPORTED_MODULE_0__astar__["a" /* default */](this.pathfindingGrid, unit.pos, unit.ralliedPos)[1]
+    const nextPos = __WEBPACK_IMPORTED_MODULE_0__astar__["a" /* default */](this.pathfindingGrid, unit.pos, unit.ralliedPos, unit)[1]
     if (unit.timer == 0) {
       unit.move(nextPos)
-      unit.timer = 30
+      unit.timer = 5
     }
     unit.timer -= 1
   }

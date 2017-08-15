@@ -24,11 +24,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     gridInitX++
   }
+  console.log(grid)
+  console.log(pathfindingGrid)
   const game = new Game(grid, pathfindingGrid)
   const units = []
   const selectedUnits = []
   units.push(new Unit([25,25], grid, pathfindingGrid))
   units.push(new Unit([5,5], grid, pathfindingGrid))
+  units.push(new Unit([50,50], grid, pathfindingGrid))
+  units.push(new Unit([15,52], grid, pathfindingGrid))
+  units.push(new Unit([52,35], grid, pathfindingGrid))
   const selector = new Selector(grid, pathfindingGrid, selectedUnits, cellSize)
 
   const update = () => {

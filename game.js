@@ -8,10 +8,10 @@ class Game {
   }
 
   moveUnit(unit) {
-    const nextPos = findPath(this.pathfindingGrid, unit.pos, unit.ralliedPos)[1]
+    const nextPos = findPath(this.pathfindingGrid, unit.pos, unit.ralliedPos, unit)[1]
     if (unit.timer == 0) {
       unit.move(nextPos)
-      unit.timer = 30
+      unit.timer = 5
     }
     unit.timer -= 1
   }
