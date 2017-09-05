@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,10 +68,169 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+const findPath = (map, pathStart, pathEnd, unit) => {
+  const	abs = Math.abs
+	const	max = Math.max
+	const	pow = Math.pow
+	const	sqrt = Math.sqrt
+  const grid = map
+	const maxWalkableTileNum = 0
+  let shortestDist = 100000
+  let closestPos
+
+	const gridWidth = grid[0].length
+	const gridHeight = grid.length
+	const gridSize =	gridWidth * gridHeight
+
+  const DiagonalDistance = (Point, Goal) => {
+		return max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
+	}
+
+  const DiagonalDistanceGoal = (Point, Goal) => {
+    const dist =  max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
+    if (dist < shortestDist) {
+      shortestDist = dist
+      closestPos = Point
+    }
+    return dist
+  }
+
+  const Neighbours = (x, y) => {
+    const	N = y - 1,
+    S = y + 1,
+    E = x + 1,
+    W = x - 1,
+    myN = N > -1 && canWalkHere(x, N),
+    myS = S < gridHeight && canWalkHere(x, S),
+    myE = E < gridWidth && canWalkHere(E, y),
+    myW = W > -1 && canWalkHere(W, y),
+    result = []
+    if(myN)
+    result.push({x:x, y:N})
+    if(myE)
+    result.push({x:E, y:y})
+    if(myS)
+    result.push({x:x, y:S})
+    if(myW)
+    result.push({x:W, y:y})
+    findNeighbours(myN, myS, myE, myW, N, S, E, W, result)
+    return result
+  }
+
+  const DiagonalNeighbors = (myN, myS, myE, myW, N, S, E, W, result) => {
+		if(myN)
+		{
+			if(myE && canWalkHere(E, N))
+			result.push({x:E, y:N})
+			if(myW && canWalkHere(W, N))
+			result.push({x:W, y:N})
+		}
+		if(myS)
+		{
+			if(myE && canWalkHere(E, S))
+			result.push({x:E, y:S})
+			if(myW && canWalkHere(W, S))
+			result.push({x:W, y:S})
+		}
+	}
+
+  const findNeighbours = DiagonalNeighbors
+
+  const canWalkHere = (x, y) => {
+    return ((grid[x] != null) &&
+      (grid[x][y] != null) &&
+      (grid[x][y] <= maxWalkableTileNum));
+  }
+
+  const Node = (Parent, Point) => {
+		const newNode = {
+			Parent:Parent,
+			value:Point.x + (Point.y * gridWidth),
+			x:Point.x,
+			y:Point.y,
+			f:0,
+			g:0
+		};
+
+		return newNode
+	}
+
+  const calculatePath = () => {
+		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]})
+		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]})
+
+    let AStar = new Array(gridSize)
+    let Open = [mypathStart]
+    let Closed = []
+		let result = []
+		let myNeighbours
+		let myNode;
+		let myPath;
+		let length, max, min, i, j;
+		while(length = Open.length)
+		{
+			max = gridSize;
+			min = -1;
+			for(i = 0; i < length; i++)
+			{
+				if(Open[i].f < max)
+				{
+					max = Open[i].f;
+					min = i;
+				}
+			}
+			myNode = Open.splice(min, 1)[0];
+			if(myNode.value === mypathEnd.value)
+			{
+				myPath = Closed[Closed.push(myNode) - 1];
+				do
+				{
+					result.push([myPath.x, myPath.y]);
+				}
+				while (myPath = myPath.Parent);
+				AStar = Closed = Open = [];
+				result.reverse();
+			}
+			else
+			{
+				myNeighbours = Neighbours(myNode.x, myNode.y);
+				for(i = 0, j = myNeighbours.length; i < j; i++)
+				{
+					myPath = Node(myNode, myNeighbours[i]);
+					if (!AStar[myPath.value])
+					{
+						myPath.g = myNode.g + DiagonalDistance(myNeighbours[i], myNode);
+						myPath.f = myPath.g + DiagonalDistanceGoal(myNeighbours[i], mypathEnd);
+						Open.push(myPath);
+						AStar[myPath.value] = true;
+					}
+				}
+				Closed.push(myNode);
+			}
+		}
+    if (result.length === 0) {
+      unit.resetRally([closestPos.x, closestPos.y])
+      result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
+    }
+		return result;
+	}
+
+  return calculatePath()
+
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (findPath);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__unit__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__selector__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astar__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__unit__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__selector__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__astar__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game_js__ = __webpack_require__(4);
 
 
@@ -109,7 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([50,50], grid, pathfindingGrid))
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([15,52], grid, pathfindingGrid))
   units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([52,35], grid, pathfindingGrid))
+  units.push(new __WEBPACK_IMPORTED_MODULE_0__unit__["a" /* default */]([79,35], grid, pathfindingGrid))
   const selector = new __WEBPACK_IMPORTED_MODULE_1__selector__["a" /* default */](grid, pathfindingGrid, selectedUnits, cellSize)
+  const terrainDetails = { }
+  const terrain = new Terrain(terrainDetails, grid, pathfindingGrid)
 
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -154,6 +316,13 @@ const drawUnits = (ctx, units) => {
     }
     ctx.fillRect(units[i].pos[0] * cellSize, units[i].pos[1] * cellSize, cellSize, cellSize)
   }
+
+const drawTerrain = (ctx, terrainDetails) => {
+  for(let i = 0; i < terrainDetails.length; i++) {
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(terrainDetails[i].x * cellSize, terrainDetails[i].y * cellSize, cellSize, cellSize)
+  }
+}
 }
 
 window.requestAnimFrame = (function(callback) {
@@ -165,7 +334,7 @@ window.requestAnimFrame = (function(callback) {
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -207,7 +376,7 @@ class Unit {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -229,14 +398,21 @@ class Selector {
     this.selectUnits = this.selectUnits.bind(this)
     this.unitAction = this.unitAction.bind(this)
 
-    this.UIcanvas.addEventListener("mousedown", (target) => {
-      this.drawSelector(target.x, target.y);
-    })
-
-    this.UIcanvas.addEventListener("mouseup", this.selectCells, false)
+    this.UIcanvas.addEventListener("mouseup", (e) => {
+      if (e.button == 0) {
+        this.selectCells(e)
+      }
+    }, false)
 
     this.UIcanvas.addEventListener("contextmenu", this.unitAction, false)
+
+    this.UIcanvas.addEventListener("mousedown", (e)=> {
+      if (e.button == 0) {
+        this.drawSelector(e.x, e.y)
+      }
+    })
   }
+
 
   unitAction(target) {
     target.preventDefault();
@@ -322,170 +498,11 @@ class Selector {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-const findPath = (map, pathStart, pathEnd, unit) => {
-  const	abs = Math.abs
-	const	max = Math.max
-	const	pow = Math.pow
-	const	sqrt = Math.sqrt
-  const grid = map
-	const maxWalkableTileNum = 0
-  let shortestDist = 100000;
-  let closestPos;
-
-	const gridWidth = grid[0].length
-	const gridHeight = grid.length
-	const gridSize =	gridWidth * gridHeight
-
-  const DiagonalDistance = (Point, Goal) => {
-		return max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
-	}
-
-  const DiagonalDistanceGoal = (Point, Goal) => {
-    const dist =  max(abs(Point.x - Goal.x), abs(Point.y - Goal.y))
-    if (dist < shortestDist) {
-      shortestDist = dist
-      closestPos = Point
-    }
-    return dist
-  }
-
-  const Neighbours = (x, y) => {
-    const	N = y - 1,
-    S = y + 1,
-    E = x + 1,
-    W = x - 1,
-    myN = N > -1 && canWalkHere(x, N),
-    myS = S < gridHeight && canWalkHere(x, S),
-    myE = E < gridWidth && canWalkHere(E, y),
-    myW = W > -1 && canWalkHere(W, y),
-    result = [];
-    if(myN)
-    result.push({x:x, y:N});
-    if(myE)
-    result.push({x:E, y:y});
-    if(myS)
-    result.push({x:x, y:S});
-    if(myW)
-    result.push({x:W, y:y});
-    findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
-    return result;
-  }
-
-  const DiagonalNeighbors = (myN, myS, myE, myW, N, S, E, W, result) => {
-		if(myN)
-		{
-			if(myE && canWalkHere(E, N))
-			result.push({x:E, y:N})
-			if(myW && canWalkHere(W, N))
-			result.push({x:W, y:N})
-		}
-		if(myS)
-		{
-			if(myE && canWalkHere(E, S))
-			result.push({x:E, y:S})
-			if(myW && canWalkHere(W, S))
-			result.push({x:W, y:S})
-		}
-	}
-
-  const findNeighbours = DiagonalNeighbors
-
-  const canWalkHere = (x, y) => {
-    return ((grid[x] != null) &&
-      (grid[x][y] != null) &&
-      (grid[x][y] <= maxWalkableTileNum));
-  }
-
-  const Node = (Parent, Point) => {
-		const newNode = {
-			Parent:Parent,
-			value:Point.x + (Point.y * gridWidth),
-			x:Point.x,
-			y:Point.y,
-			f:0,
-			g:0
-		};
-
-		return newNode;
-	}
-
-  const calculatePath = () => {
-		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
-		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
-
-    let AStar = new Array(gridSize);
-    let Open = [mypathStart];
-    let Closed = [];
-		let result = [];
-		let myNeighbours;
-		let myNode;
-		let myPath;
-		let length, max, min, i, j;
-		while(length = Open.length)
-		{
-			max = gridSize;
-			min = -1;
-			for(i = 0; i < length; i++)
-			{
-				if(Open[i].f < max)
-				{
-					max = Open[i].f;
-					min = i;
-				}
-			}
-			myNode = Open.splice(min, 1)[0];
-			if(myNode.value === mypathEnd.value)
-			{
-				myPath = Closed[Closed.push(myNode) - 1];
-				do
-				{
-					result.push([myPath.x, myPath.y]);
-				}
-				while (myPath = myPath.Parent);
-				AStar = Closed = Open = [];
-				result.reverse();
-			}
-			else
-			{
-				myNeighbours = Neighbours(myNode.x, myNode.y);
-				for(i = 0, j = myNeighbours.length; i < j; i++)
-				{
-					myPath = Node(myNode, myNeighbours[i]);
-					if (!AStar[myPath.value])
-					{
-						myPath.g = myNode.g + DiagonalDistance(myNeighbours[i], myNode);
-						myPath.f = myPath.g + DiagonalDistanceGoal(myNeighbours[i], mypathEnd);
-						Open.push(myPath);
-						AStar[myPath.value] = true;
-					}
-				}
-				Closed.push(myNode);
-			}
-		}
-    if (result.length === 0) {
-      unit.resetRally([closestPos.x, closestPos.y])
-      result = findPath(grid, pathStart, [closestPos.x, closestPos.y])
-    }
-		return result;
-	}
-
-  return calculatePath()
-
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (findPath);
-
-
-/***/ }),
 /* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__astar__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__astar__ = __webpack_require__(0);
 
 
 class Game {
@@ -496,7 +513,7 @@ class Game {
   }
 
   moveUnit(unit) {
-    const nextPos = __WEBPACK_IMPORTED_MODULE_0__astar__["a" /* default */](this.pathfindingGrid, unit.pos, unit.ralliedPos, unit)[1]
+    const nextPos = Object(__WEBPACK_IMPORTED_MODULE_0__astar__["a" /* default */])(this.pathfindingGrid, unit.pos, unit.ralliedPos, unit)[1]
     if (unit.timer == 0) {
       unit.move(nextPos)
       unit.timer = 5

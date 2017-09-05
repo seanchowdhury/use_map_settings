@@ -16,14 +16,21 @@ class Selector {
     this.selectUnits = this.selectUnits.bind(this)
     this.unitAction = this.unitAction.bind(this)
 
-    this.UIcanvas.addEventListener("mousedown", (target) => {
-      this.drawSelector(target.x, target.y);
-    })
-
-    this.UIcanvas.addEventListener("mouseup", this.selectCells, false)
+    this.UIcanvas.addEventListener("mouseup", (e) => {
+      if (e.button == 0) {
+        this.selectCells(e)
+      }
+    }, false)
 
     this.UIcanvas.addEventListener("contextmenu", this.unitAction, false)
+
+    this.UIcanvas.addEventListener("mousedown", (e)=> {
+      if (e.button == 0) {
+        this.drawSelector(e.x, e.y)
+      }
+    })
   }
+
 
   unitAction(target) {
     target.preventDefault();
@@ -105,4 +112,4 @@ class Selector {
 
 }
 
-export default Selector;
+export default Selector

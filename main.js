@@ -34,7 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
   units.push(new Unit([50,50], grid, pathfindingGrid))
   units.push(new Unit([15,52], grid, pathfindingGrid))
   units.push(new Unit([52,35], grid, pathfindingGrid))
+  units.push(new Unit([79,35], grid, pathfindingGrid))
   const selector = new Selector(grid, pathfindingGrid, selectedUnits, cellSize)
+  const terrainDetails = { }
+  const terrain = new Terrain(terrainDetails, grid, pathfindingGrid)
 
   const update = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -79,6 +82,13 @@ const drawUnits = (ctx, units) => {
     }
     ctx.fillRect(units[i].pos[0] * cellSize, units[i].pos[1] * cellSize, cellSize, cellSize)
   }
+
+const drawTerrain = (ctx, terrainDetails) => {
+  for(let i = 0; i < terrainDetails.length; i++) {
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(terrainDetails[i].x * cellSize, terrainDetails[i].y * cellSize, cellSize, cellSize)
+  }
+}
 }
 
 window.requestAnimFrame = (function(callback) {

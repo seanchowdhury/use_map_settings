@@ -5,8 +5,8 @@ const findPath = (map, pathStart, pathEnd, unit) => {
 	const	sqrt = Math.sqrt
   const grid = map
 	const maxWalkableTileNum = 0
-  let shortestDist = 100000;
-  let closestPos;
+  let shortestDist = 100000
+  let closestPos
 
 	const gridWidth = grid[0].length
 	const gridHeight = grid.length
@@ -34,17 +34,17 @@ const findPath = (map, pathStart, pathEnd, unit) => {
     myS = S < gridHeight && canWalkHere(x, S),
     myE = E < gridWidth && canWalkHere(E, y),
     myW = W > -1 && canWalkHere(W, y),
-    result = [];
+    result = []
     if(myN)
-    result.push({x:x, y:N});
+    result.push({x:x, y:N})
     if(myE)
-    result.push({x:E, y:y});
+    result.push({x:E, y:y})
     if(myS)
-    result.push({x:x, y:S});
+    result.push({x:x, y:S})
     if(myW)
-    result.push({x:W, y:y});
-    findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
-    return result;
+    result.push({x:W, y:y})
+    findNeighbours(myN, myS, myE, myW, N, S, E, W, result)
+    return result
   }
 
   const DiagonalNeighbors = (myN, myS, myE, myW, N, S, E, W, result) => {
@@ -82,18 +82,18 @@ const findPath = (map, pathStart, pathEnd, unit) => {
 			g:0
 		};
 
-		return newNode;
+		return newNode
 	}
 
   const calculatePath = () => {
-		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
-		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
+		const	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]})
+		const mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]})
 
-    let AStar = new Array(gridSize);
-    let Open = [mypathStart];
-    let Closed = [];
-		let result = [];
-		let myNeighbours;
+    let AStar = new Array(gridSize)
+    let Open = [mypathStart]
+    let Closed = []
+		let result = []
+		let myNeighbours
 		let myNode;
 		let myPath;
 		let length, max, min, i, j;
